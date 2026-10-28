@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Cerrado por defecto durante la fase de conexión.
+    // No habilitar datos en la nube hasta definir y probar roles y pertenencia familiar.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#173f35">
+<title>Finanzas y Patrimonio</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17231f;background:#f4f7f5}
+*{box-sizing:border-box}body{margin:0}header{background:#173f35;color:#fff;padding:20px max(16px,calc((100% - 1100px)/2));}
+header h1{margin:0;font-size:1.35rem}header p{margin:6px 0 0;color:#d7e8e1;font-size:.92rem}
+main{max-width:1100px;margin:auto;padding:18px;display:grid;gap:16px}
+.notice{background:#fff7df;border:1px solid #e9d28b;border-radius:12px;padding:12px;font-size:.9rem}
+.card{background:white;border:1px solid #dce5df;border-radius:14px;padding:16px;min-width:0}
+h2{font-size:1.05rem;margin:0 0 12px}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+label{display:grid;gap:5px;font-size:.88rem;font-weight:600}
+input,select,textarea,button{font:inherit;border-radius:9px;padding:11px;border:1px solid #cbd8d0;background:white;color:#17231f;width:100%}
+textarea{min-height:44px;resize:vertical}.full{grid-column:1/-1}
+button{background:#173f35;color:white;border:0;font-weight:650;cursor:pointer}button.secondary{background:#e7efea;color:#173f35;border:1px solid #cbd8d0}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{width:auto}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.metric-label{color:#64736c;font-size:.85rem}.metric{font-size:1.5rem;font-weight:750;margin-top:5px;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid #e6ece8}th{color:#64736c;font-weight:650}
+.table-wrap{overflow-x:auto}.empty{color:#64736c;padding:14px 0}.small{font-size:.82rem;color:#64736c}.tag{display:inline-block;border-radius:99px;padding:3px 8px;background:#e7efea;color:#173f35;font-size:.75rem}
+footer{max-width:1100px;margin:auto;padding:0 18px 28px;color:#64736c;font-size:.82rem}
+.hidden{display:none!important}.status{padding:10px;border-radius:9px;background:#edf5ef;color:#173f35;margin-top:10px}.error{background:#fff0ef;color:#8b1d16}.topline{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.grid .card{padding:14px}form{grid-template-columns:1fr}.full{grid-column:auto}main{padding:12px}header{padding:18px 14px}table{min-width:620px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Finanzas y Patrimonio</h1>
+  <p>Versión 0.3 de prueba · Objetivo de versión completa: 31 de enero de 2027</p>
+</header>
+<main>
+  <section id="loginPanel" class="card">
+    <h2>Iniciar sesión</h2>
+    <p>Acceso privado mediante correo electrónico y contraseña. No hay registro público; el administrador debe crear las cuentas.</p>
+    <form id="loginForm">
+      <label class="full">Correo electrónico<input id="email" type="email" autocomplete="username" required maxlength="254"></label>
+      <label class="full">Contraseña<input id="password" type="password" autocomplete="current-password" required minlength="6"></label>
+      <div class="full"><button id="loginBtn" type="submit">Iniciar sesión</button></div>
+    </form>
+    <div id="loginStatus" class="status hidden" role="status"></div>
+    <p class="small">Si aún no tienes una cuenta, el administrador debe crearla desde Firebase Console. Esta pantalla no permite registrarse.</p>
+  </section>
+
+  <section id="appPanel" class="hidden">
+    <div class="card topline">
+      <div><strong>Sesión iniciada</strong><div id="userEmail" class="small"></div></div>
+      <button id="logoutBtn" class="secondary" type="button">Cerrar sesión</button>
+    </div>
+    <div class="notice"><strong>Versión de prueba:</strong> el inicio de sesión ya usa Firebase Authentication, pero los movimientos de esta versión siguen guardándose únicamente en el navegador de este dispositivo. Todavía no hay sincronización en la nube ni permisos por módulo implementados. No registres datos financieros reales.</div>
+    <section class="card">
+      <h2>Seguridad adaptable · En desarrollo</h2>
+      <p>Esta aplicación todavía no es un antivirus y no analiza ni limpia el dispositivo. La seguridad de producción requiere reglas de base de datos, permisos por usuario, auditoría y pruebas.</p>
+    </section>
+    <section class="grid" aria-label="Resumen">
+      <div class="card"><div class="metric-label">Ingresos registrados</div><div class="metric" id="income">$0.00</div></div>
+      <div class="card"><div class="metric-label">Salidas registradas</div><div class="metric" id="outflow">$0.00</div></div>
+      <div class="card"><div class="metric-label">Diferencia del registro</div><div class="metric" id="net">$0.00</div></div>
+    </section>
+    <section class="card">
+      <h2>Registrar movimiento de prueba</h2>
+      <form id="movementForm">
+        <label>Fecha<input id="date" type="date" required></label>
+        <label>Área<select id="area"><option>EL DAMISOL (prueba)</option><option>Finanzas personales (prueba)</option><option>Familia (prueba)</option><option>Propiedades y patrimonio (prueba)</option></select></label>
+        <label>Tipo<select id="type"><option value="income">Ingreso / venta</option><option value="expense">Gasto</option><option value="purchase">Compra de mercancía</option><option value="withdrawal">Retiro personal</option><option value="debt_payment">Pago de deuda</option><option value="other">Otro movimiento</option></select></label>
+        <label>Importe (MXN)<input id="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required></label>
+        <label>Categoría<input id="category" maxlength="80" placeholder="Ej. ropa, renta, venta"></label>
+        <label>Forma de pago<select id="payment"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select></label>
+        <label class="full">Concepto / nota<textarea id="concept" maxlength="300" placeholder="Solo escribe datos ficticios para probar" required></textarea></label>
+        <div class="full"><button type="submit">Guardar movimiento local de prueba</button></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Movimientos de prueba <span class="tag" id="count">0</span></h2>
+      <div class="actions" style="margin-bottom:12px">
+        <button class="secondary" id="exportBtn" type="button">Descargar CSV</button>
+        <button class="secondary" id="backupBtn" type="button">Descargar respaldo JSON</button>
+        <label style="display:inline-flex;align-items:center"><input id="importFile" type="file" accept=".json,application/json" style="width:auto;padding:5px"> <span class="small">Restaurar JSON</span></label>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Área</th><th>Tipo</th><th>Concepto</th><th>Importe</th><th>Estado</th></tr></thead><tbody id="rows"></tbody></table></div>
+      <p id="empty" class="empty">Todavía no hay movimientos de prueba.</p>
+    </section>
+  </section>
+</main>
+<footer>Finanzas y Patrimonio · Versión de prueba autenticada. Los datos financieros reales no deben registrarse hasta implementar y verificar la base de datos, los permisos y la sincronización.</footer>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDDevSrI0-vfPXnsUI7VcbGJODT_xPmQF8",
+  authDomain: "finanzas-y-patrimonio.firebaseapp.com",
+  projectId: "finanzas-y-patrimonio",
+  storageBucket: "finanzas-y-patrimonio.firebasestorage.app",
+  messagingSenderId: "1092371754717",
+  appId: "1:1092371754717:web:66ed160ffe2c2033407534"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const $ = id => document.getElementById(id);
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('loginBtn').disabled = true;
+  showLoginStatus('Verificando acceso…', false);
+  try {
+    await signInWithEmailAndPassword(auth, $('email').value.trim(), $('password').value);
+    $('password').value = '';
+    showLoginStatus('', false);
+  } catch (err) {
+    // Mensaje genérico para no revelar si un correo existe.
+    showLoginStatus('No se pudo iniciar sesión. Revisa el correo y la contraseña o solicita ayuda al administrador.', true);
+  } finally { $('loginBtn').disabled = false; }
+});
+$('logoutBtn').addEventListener('click', async () => { try { await signOut(auth); } catch { alert('No se pudo cerrar la sesión. Inténtalo de nuevo.'); } });
+onAuthStateChanged(auth, user => {
+  $('loginPanel').classList.toggle('hidden', !!user);
+  $('appPanel').classList.toggle('hidden', !user);
+  $('userEmail').textContent = user ? user.email : '';
+  if (user) startLocalPrototype();
+});
+function showLoginStatus(msg, isError) {
+  const el = $('loginStatus'); el.textContent = msg; el.classList.toggle('hidden', !msg); el.classList.toggle('error', !!isError);
+}
+
+const DB_NAME='finanzasPatrimonioLocal03', STORE='movimientos';
+let db, prototypeStarted=false;
+const fmt=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(n||0);
+function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function all(){return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readonly'),req=tx.objectStore(STORE).getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);});}
+function save(item){return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(item);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
+function typeLabel(t){return ({income:'Ingreso / venta',expense:'Gasto',purchase:'Compra mercancía',withdrawal:'Retiro personal',debt_payment:'Pago de deuda',other:'Otro'})[t]||t;}
+async function render(){const items=(await all()).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);$('count').textContent=items.length;$('rows').innerHTML='';$('empty').style.display=items.length?'none':'block';let income=0,out=0;
+for(const x of items){if(x.type==='income')income+=x.amount;else out+=x.amount;const tr=document.createElement('tr');[x.date,x.area,typeLabel(x.type),x.concept,fmt(x.amount),'Solo en este dispositivo'].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.appendChild(td)});$('rows').appendChild(tr);}
+$('income').textContent=fmt(income);$('outflow').textContent=fmt(out);$('net').textContent=fmt(income-out);}
+function download(name,content,mime){const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+async function startLocalPrototype(){
+ if(prototypeStarted) return; prototypeStarted=true;
+ try { db=await openDb(); await render(); $('date').value=new Date().toISOString().slice(0,10); }
+ catch { alert('No se pudo abrir el almacenamiento local de prueba en este navegador.'); }
+ $('movementForm').addEventListener('submit',async e=>{e.preventDefault();const amount=Number($('amount').value);if(!Number.isFinite(amount)||amount<=0)return alert('Escribe un importe mayor que cero.');const item={id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2),date:$('date').value,area:$('area').value,type:$('type').value,amount,category:$('category').value.trim(),payment:$('payment').value,concept:$('concept').value.trim(),createdAt:Date.now(),syncStatus:'local_only',testOnly:true};await save(item);$('concept').value='';$('amount').value='';$('category').value='';await render();alert('Movimiento ficticio guardado solo en este dispositivo; no se ha sincronizado.');});
+ $('exportBtn').onclick=async()=>{const items=await all();const cols=['date','area','type','amount','category','payment','concept'];const esc=v=>'"'+String(v??'').replaceAll('"','""')+'"';const csv=[cols.join(','),...items.map(x=>cols.map(k=>esc(x[k])).join(','))].join('\r\n');download('movimientos_prueba.csv','\ufeff'+csv,'text/csv;charset=utf-8');};
+ $('backupBtn').onclick=async()=>download('respaldo_prueba.json',JSON.stringify({formatVersion:1,createdAt:new Date().toISOString(),movimientos:await all()},null,2),'application/json');
+ $('importFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{if(f.size>2*1024*1024)throw Error('El archivo supera 2 MB');const data=JSON.parse(await f.text());if(!Array.isArray(data.movimientos)||data.movimientos.length>10000)throw Error('Formato o cantidad de movimientos no válida');if(!confirm('Solo para pruebas: se agregarán movimientos locales y pueden quedar duplicados. ¿Continuar?'))return;for(const item of data.movimientos){if(item.id&&item.date&&Number.isFinite(Number(item.amount))&&Number(item.amount)>0)await save({...item,amount:Number(item.amount),syncStatus:'local_only',testOnly:true});}await render();alert('Respaldo de prueba importado. Revisa posibles duplicados.');}catch(err){alert('No se pudo importar el archivo: '+err.message)}finally{e.target.value='';}});
+}
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
